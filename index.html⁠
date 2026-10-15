@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja" class="dark max-w-full overflow-x-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SOCIAL QUEST - Middle School Social Studies RPG</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+
+        html {
+            overflow-x: hidden;
+            max-width: 100vw;
+            overscroll-behavior: contain;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #060911;
+            color: #f1f5f9;
+            user-select: none;
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+            overscroll-behavior: contain;
+            transform: translateZ(0); /* Hardware Acceleration */
+        }
+
+        /* High-Performance Glassmorphism */
+        .glass-card {
+            background: rgba(13, 19, 33, 0.94);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            will-change: transform, opacity;
+        }
+
+        /* Metallic Cyber-Dark Admin Styling */
+        .metallic-panel {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #090d16 100%);
+            border: 2px solid #38bdf8;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+        }
+
+        .metallic-header {
+            background: linear-gradient(90deg, #0284c7, #0369a1, #0f172a);
+            border-bottom: 2px solid #7dd3fc;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px rgba(125, 211, 252, 0.6);
+        }
+
+        .metallic-btn {
+            background: linear-gradient(180deg, #334155 0%, #0f172a 100%);
+            border: 1px solid #64748b;
+            color: #f8fafc;
+            transition: transform 0.1s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .metallic-btn:hover {
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+
+        .hp-bar-fill {
+            transition: width 0.25s ease-out;
+            will-change: width;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-animate {
+            animation: slideDown 0.25s ease-out forwards;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #060911;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+    </style>
+
+    <!-- FIREBASE MODULES IMPORT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase state initialization
+        window.firebaseApp = null;
+        window.firebaseDb = null;
+        window.firebaseAuth = null;
+        window.currentUser = null;
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'social-quest-app-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "dummy-api-key",
+            authDomain: "dummy.firebaseapp.com",
+            projectId: "dummy-project",
+            storageBucket: "dummy.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        try {
+            window.firebaseApp = initializeApp(firebaseConfig);
+            window.firebaseDb = getFirestore(window.firebaseApp);
+            window.firebaseAuth = getAuth(window.firebaseApp);
+
+            const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            if (token) {
+                await signInWithCustomToken(window.firebaseAuth, token);
+            } else {
+                await signInAnonymously(window.firebaseAuth);
+            }
+
+            onAuthStateChanged(window.firebaseAuth, (user) => {
+                if (user) {
+                    window.currentUser = user;
+                    window.syncCloudData();
+                    window.listenGlobalLeaderb
